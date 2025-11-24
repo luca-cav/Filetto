@@ -1,0 +1,43 @@
+<div style="margin: auto; display: flex; justify-content: space-around; justify-items: center; align-items: center;">
+
+    <div>
+        <h3>{{players[0].name}}</h3>
+        <p>Vittorie: {{players[0].wins}}</p>
+        <p>Pareggi: {{players[0].draws}}</p>
+        <p>Sconfitte: {{players[0].losses}}</p>
+    </div>
+
+    <div style="display: grid; text-align: center;">
+        @if(start()){
+            <h1>Round: {{currentRound()}}</h1>
+        }
+        <p>{{ duration()* 1000 | date:'mm:ss' }}</p>
+        <button matIconButton (click)="startMatch()">
+            <mat-icon fontIcon="{{start() ?'replay':'play_arrow'}}"></mat-icon>
+        </button>
+        <p>Tocca a: {{players[currentPlayerIndex()].name}}</p>
+    </div>
+
+    <div>
+        <h3>{{players[1].name}}</h3>
+        <p>Vittorie: {{players[1].wins}}</p>
+        <p>Pareggi: {{players[1].draws}}</p>
+        <p>Sconfitte: {{players[1].losses}}</p>
+    </div>
+</div>
+
+<mat-card class="match-card" appearance="outlined">
+    @for(row of matchGrid; track $index; let i = $index){
+        <div style="width: fit-content; display: flex; align-content: center;align-items: center;">
+        @for(cell of row; track $index; let j = $index){
+            <div style="width: fit-content;">
+                <button matIconButton class="match-cell" (click)="OnCellClick(i, j)" [disabled]='!start() ? true : cell.value!==0'>
+                    <mat-icon fontIcon="{{cell.symbol}}"  class="match-icon"></mat-icon>
+                </button>
+            </div>
+        }
+        </div>
+    }
+</mat-card>
+
+

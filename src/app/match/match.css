@@ -1,0 +1,41 @@
+.match-card{
+    margin: auto;
+    display: flex; 
+    width: fit-content; 
+    height: auto;
+    flex-wrap: wrap; 
+    flex-direction: column;
+
+    justify-content: space-evenly;
+    align-content: center;
+    align-items: center;
+    background-color: black;
+}
+
+
+.match-cell{
+    cursor: pointer;
+    width: 100%;
+    border-width: 0;
+    padding: 6px;
+    background-color:white;
+    color:black;
+    border-color:black;
+}
+
+.match-cell:disabled{
+    cursor: default;
+    color-scheme: light;
+    color:black;
+    border-color:black;
+}
+
+.match-icon{
+    font-size: 6rem;
+    height: 6rem;
+    width: 6rem;
+}
+
+p{
+    margin-top: 0;
+}
