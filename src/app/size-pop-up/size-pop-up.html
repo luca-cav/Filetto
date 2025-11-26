@@ -5,19 +5,19 @@
             
             <label class="example-margin">Inserisci la grandezza del campo di gioco:</label>
             <mat-radio-group [(ngModel)]="size" name="size">
-                <mat-radio-button class="example-margin" value="3">3</mat-radio-button>
-                <mat-radio-button class="example-margin" value="4">4</mat-radio-button>
-                <mat-radio-button class="example-margin" value="5">5</mat-radio-button>
-                <mat-radio-button class="example-margin" value="6">Altro</mat-radio-button>
+                <mat-radio-button class="example-margin" value="{{3}}">3</mat-radio-button>
+                <mat-radio-button class="example-margin" value="{{4}}">4</mat-radio-button>
+                <mat-radio-button class="example-margin" value="{{5}}">5</mat-radio-button>
+                <mat-radio-button class="example-margin" value="{{6}}">Altro</mat-radio-button>
             </mat-radio-group>
             @if(size()==6){
 
                 <input type="number" matInput [(ngModel)]="customSize" name="customSize">
                 @if (customSize()>10) {
-                <mat-error>per favore inserisci un numero minore o uguale a 10</mat-error>
+                    <mat-error>per favore inserisci un numero minore o uguale a 10</mat-error>
                 }
-                @if (customSize()==0) {
-                <mat-error>Un valore per la grandezza è obligatorio</mat-error>
+                @if (customSize()>=0) {
+                    <mat-error>Un valore per la grandezza è obligatorio</mat-error>
                 }
             }   
             

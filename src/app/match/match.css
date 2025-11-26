@@ -9,14 +9,14 @@
     justify-content: space-evenly;
     align-content: center;
     align-items: center;
-    background-color: black;
 }
 
 
 .match-cell{
     cursor: pointer;
     width: 100%;
-    border-width: 0;
+    border-width: 2px;
+    border-style: solid;
     padding: 6px;
     background-color:white;
     color:black;

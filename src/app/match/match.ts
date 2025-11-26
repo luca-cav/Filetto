@@ -8,6 +8,10 @@ import { WinningPopUp } from '../winning-pop-up/winning-pop-up';
 import { Subscription, timer } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { SizePopUp } from '../size-pop-up/size-pop-up';
+import { SocketService } from '../shared/services/socket.service';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { WaitingPopUp } from '../waiting-pop-up/waiting-pop-up';
 
 interface Symbol{
   symbol:string;
@@ -16,13 +20,13 @@ interface Symbol{
 
 @Component({
   selector: 'app-match',
-  imports: [MatCard, MatIconModule, DatePipe ],
+  imports: [MatCard, MatIconModule, DatePipe, FormsModule ],
   templateUrl: './match.html',
   styleUrl: './match.css',
 })
 export class Match implements OnInit{
 [x: string]: any;
-  constructor(){
+  constructor(private readonly socketService: SocketService) {
     effect(()=>{
       if(this.duration()==0){
         this.pauseTimer();
@@ -31,22 +35,69 @@ export class Match implements OnInit{
   }
 
   readonly dialog = inject(MatDialog);
+  readonly route = inject(ActivatedRoute);
   start =signal<boolean>(false);
   duration=signal<number>(10);
   currentRound =signal(0);
   matchGrid :Symbol[][]=[];
   players :Player[]=[Player_DEFAULT,Player_DEFAULT];
-  currentPlayerIndex =computed(()=>this.currentRound()%2 ? 0:1);
+  currentPlayerIndex =computed(()=>(this.currentRound()%2===0) ? 1:0);
   size=3;
-
   timer: Subscription = new Subscription;
+  nConnectedPlayers=signal<number>(1);
+  currentRoomId: string= '';
+  
   ngOnInit(): void {
-    this.getSize();
-    this.getPlayer(1);
-    this.getPlayer(0);
+    this.route.paramMap.subscribe(params => {
+      const roomId = params.get('roomId');
+      if (roomId) {
+        this.socketService.enterRoom(roomId);
+        this.getPlayer(1);
+      }else{
+        this.waitingPlayer();
+        this.getSize();
+        this.getPlayer(0);
+      }
+    });
 
+    this.socketService.getRoomId().subscribe((roomId: string) => {
+      console.log("Room: ", roomId);
+      this.currentRoomId=roomId;
+    });
+    
+    this.socketService.getOtherPlayerInfo().subscribe((data:{playerInfo: Player,gridSize:number|undefined}) => {
+      console.log("Other Player Info: ", data.playerInfo);
+      if(data.gridSize){
+        this.players[0]=data.playerInfo;
+        this.size=data.gridSize;
+      }else{
+        this.players[1]=data.playerInfo;
+      }
+      console.log(this.players)
+    });
+
+    this.socketService.getStartMatch().subscribe(() => {
+      this.start.set(true);
+      this.startMatch();
+    });
+
+    this.socketService.getMove().subscribe((matchGrid:Symbol[][]) => {
+      console.log("Move received: ", matchGrid);
+      this.matchGrid=matchGrid;
+      this.duration.set(10);
+      this.updateScore();
+    });
+
+    this.socketService.getPlayerDisconnect().subscribe(() => {
+      console.log("Player disconnected");
+      this.pauseTimer();
+      this.start.set(false);
+      this.currentRound.set(0);
+      this.matchGrid=[];
+      this.waitingPlayer();
+    });
   }
-
+  
   getPlayer(index:number){
     
     const dialogRef = this.dialog.open(PlayerCreation, {
@@ -64,6 +115,7 @@ export class Match implements OnInit{
           draws: 0,
           losses: 0
         };
+        this.socketService.sendPlayerInfo(this.players[result.id]);
         console.log(this.players)
       }
       else{
@@ -75,6 +127,7 @@ export class Match implements OnInit{
           draws: 0,
           losses: 0
         };
+        this.socketService.sendPlayerInfo(this.players[result.id]);
         console.log(this.players)
       }
     });
@@ -84,7 +137,7 @@ export class Match implements OnInit{
     const dialogRef = this.dialog.open(SizePopUp);
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed'+result);
+      console.log('The dialog was closed'+result.size);
       if (result.size) {
         this.size=result.size;
         console.log(this.size);
@@ -93,9 +146,20 @@ export class Match implements OnInit{
 
   }
 
+  waitingPlayer(){
+    const dialogRef = this.dialog.open(WaitingPopUp,{disableClose: true});
+    dialogRef.afterClosed().subscribe(() => {
+      this.nConnectedPlayers.set(2);
+      this.socketService.sendPlayerInfo(this.players[0],this.size);
+    });
+  }
+
   startMatch(){
+    if(!this.start()){
+      this.start.set(true);
+      this.socketService.startMatch();
+    }
     this.timer.unsubscribe();
-    this.start.set(true);
     this.currentRound.set(1);
     this.matchGrid=[];
     for (let i = 0; i < this.size; i++) {
@@ -104,7 +168,6 @@ export class Match implements OnInit{
         this.matchGrid[i].push({symbol:"",value:0});
       }
     }
-
     this.startTimer();
   }
 
@@ -134,22 +197,28 @@ export class Match implements OnInit{
       this.duration.set(10);
       this.matchGrid[i][j].symbol=this.players[this.currentPlayerIndex()].symbol;
       this.matchGrid[i][j].value=this.players[this.currentPlayerIndex()].value;
+      this.socketService.sendMove(this.matchGrid);
       if(this.currentRound()>=5){
-        if(this.checkWin(this.players[this.currentPlayerIndex()].value*this.size)){
-          this.pauseTimer();
-          this.players[this.currentPlayerIndex()].wins++;
-          this.showTrophy(this.currentPlayerIndex());
-          this.currentRound.update(value=>  value-1);
-          this.players[this.currentPlayerIndex()].losses++;
-          this.start.set(false);
-        }else if(this.currentRound()==this.size**2){
-          this.pauseTimer();
-          this.players[this.currentPlayerIndex()].draws++;
-          this.currentRound.update(value=>  value-1);
-          this.players[this.currentPlayerIndex()].draws++;
-          this.start.set(false);
-        }
+        this.updateScore();
+      }else{
+        this.currentRound.update(value=>  value+1);
       }
+    }
+  }
+
+  updateScore(){
+    if(this.checkWin(this.players[this.currentPlayerIndex()].value*this.size)){
+      this.pauseTimer();
+      this.showTrophy(this.currentPlayerIndex());
+      this.players[this.currentPlayerIndex()].wins++;
+      this.players[!(this.currentRound()%2===0) ? 0:1].losses++;
+      this.start.set(false);
+    }else if(this.currentRound()==this.size**2){
+      this.pauseTimer();
+      this.players[this.currentPlayerIndex()].draws++;
+      this.players[!(this.currentRound()%2===0) ? 0:1].draws++;
+      this.start.set(false);
+    }else{
       this.currentRound.update(value=>  value+1);
     }
   }

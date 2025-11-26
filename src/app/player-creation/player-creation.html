@@ -1,11 +1,11 @@
-<h2 mat-dialog-title>Inserisci il tuo nome Giocatore {{id()+1}}!</h2>
-<mat-dialog-content>
+<h2 mat-dialog-title style="text-align: center;">Inserisci il tuo nome <br>Giocatore {{id()+1}}!</h2>
+<mat-dialog-content style="justify-content: center;">
   <mat-form-field>
     <mat-label>Nome:</mat-label>
     <input matInput [(ngModel)]="name"/>
   </mat-form-field>
 </mat-dialog-content>
-<mat-dialog-actions>
+<mat-dialog-actions >
   <button matButton (click)="onNoClick()">Esci</button>
   <button matButton (click)="OnClick()" cdkFocusInitial>Invia</button>
 </mat-dialog-actions>

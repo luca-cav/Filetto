@@ -12,9 +12,11 @@
             <h1>Round: {{currentRound()}}</h1>
         }
         <p>{{ duration()* 1000 | date:'mm:ss' }}</p>
+        
         <button matIconButton (click)="startMatch()">
             <mat-icon fontIcon="{{start() ?'replay':'play_arrow'}}"></mat-icon>
         </button>
+        
         <p>Tocca a: {{players[currentPlayerIndex()].name}}</p>
     </div>
 
@@ -25,7 +27,6 @@
         <p>Sconfitte: {{players[1].losses}}</p>
     </div>
 </div>
-
 <mat-card class="match-card" appearance="outlined">
     @for(row of matchGrid; track $index; let i = $index){
         <div style="width: fit-content; display: flex; align-content: center;align-items: center;">
