@@ -1,10 +1,9 @@
 import { Component, effect, inject, model, OnInit } from '@angular/core';
-import { MatCardModule } from "@angular/material/card";
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 import { SocketService } from '../shared/services/socket.service';
 @Component({
   selector: 'app-waiting-pop-up',
-  imports: [MatCardModule],
+  imports: [ MatDialogContent, MatDialogTitle],
   templateUrl: './waiting-pop-up.html',
   styleUrl: './waiting-pop-up.css',
 })
@@ -27,7 +26,7 @@ export class WaitingPopUp implements OnInit {
     console.log("WaitingPopUp initialized");
     this.socketService.getRoomId().subscribe((roomId: string) => {
       console.log("Room: ", roomId);
-      this.linkRoom = window.location.href+"/invite/"+roomId;
+      this.linkRoom = window.location.href+"invite/"+roomId;
     });
 
     this.socketService.updateNPlayers().subscribe((nPlayers: number) => {

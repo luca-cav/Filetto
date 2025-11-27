@@ -1,26 +1,24 @@
-<section class="example-section">
-
-    <form class="example-form">
-        <mat-dialog-content>
-            
-            <label class="example-margin">Inserisci la grandezza del campo di gioco:</label>
+<section>
+    <form>
+        <h2 mat-dialog-title style="text-align: center;">Seleziona la grandezza del <br> campo di gioco:</h2>
+        <mat-dialog-content style=" justify-items: center; display: grid;">
             <mat-radio-group [(ngModel)]="size" name="size">
-                <mat-radio-button class="example-margin" value="{{3}}">3</mat-radio-button>
-                <mat-radio-button class="example-margin" value="{{4}}">4</mat-radio-button>
-                <mat-radio-button class="example-margin" value="{{5}}">5</mat-radio-button>
-                <mat-radio-button class="example-margin" value="{{6}}">Altro</mat-radio-button>
-            </mat-radio-group>
+                <mat-radio-button value="{{3}}">3</mat-radio-button>
+                <mat-radio-button value="{{4}}">4</mat-radio-button>
+                <mat-radio-button value="{{5}}">5</mat-radio-button>
+                <mat-radio-button value="{{6}}">Altro</mat-radio-button>
+            </mat-radio-group><br>
             @if(size()==6){
-
-                <input type="number" matInput [(ngModel)]="customSize" name="customSize">
+                <mat-form-field>
+                    <input matInput type="number" [(ngModel)]="customSize" name="customSize"><br>
+                </mat-form-field> 
                 @if (customSize()>10) {
-                    <mat-error>per favore inserisci un numero minore o uguale a 10</mat-error>
+                    <mat-error>Il valore massimo accettato è 10</mat-error>
                 }
-                @if (customSize()>=0) {
-                    <mat-error>Un valore per la grandezza è obligatorio</mat-error>
+                @if (customSize()<3) {
+                    <mat-error>Il valore minimo accettato è 3</mat-error>
                 }
             }   
-            
         </mat-dialog-content>
         <mat-dialog-actions>
             <button matButton (click)="OnClick()" cdkFocusInitial [disabled]="disabled()">Invia</button>

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, Input, InputSignal, model, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { MatCard } from '@angular/material/card';
 import { MatIconModule } from "@angular/material/icon";
 import { Player, Player_DEFAULT } from '../shared/models/player';
@@ -12,6 +12,8 @@ import { SocketService } from '../shared/services/socket.service';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { WaitingPopUp } from '../waiting-pop-up/waiting-pop-up';
+import {MatButtonModule} from '@angular/material/button';
+import { DisconnectPopUp } from '../disconnect-pop-up/disconnect-pop-up';
 
 interface Symbol{
   symbol:string;
@@ -20,7 +22,7 @@ interface Symbol{
 
 @Component({
   selector: 'app-match',
-  imports: [MatCard, MatIconModule, DatePipe, FormsModule ],
+  imports: [MatCard, MatIconModule, DatePipe, FormsModule, MatButtonModule ],
   templateUrl: './match.html',
   styleUrl: './match.css',
 })
@@ -39,12 +41,13 @@ export class Match implements OnInit{
   start =signal<boolean>(false);
   duration=signal<number>(10);
   currentRound =signal(0);
+  nConnectedPlayers=signal<number>(1);
+  currentPlayerIndex =computed(()=>(this.currentRound()%2===0) ? 1:0);
   matchGrid :Symbol[][]=[];
   players :Player[]=[Player_DEFAULT,Player_DEFAULT];
-  currentPlayerIndex =computed(()=>(this.currentRound()%2===0) ? 1:0);
-  size=3;
+  thisPlayerIndex :number=2;
+  size :number =3;
   timer: Subscription = new Subscription;
-  nConnectedPlayers=signal<number>(1);
   currentRoomId: string= '';
   
   ngOnInit(): void {
@@ -53,10 +56,12 @@ export class Match implements OnInit{
       if (roomId) {
         this.socketService.enterRoom(roomId);
         this.getPlayer(1);
+        this.thisPlayerIndex=1;
       }else{
         this.waitingPlayer();
         this.getSize();
         this.getPlayer(0);
+        this.thisPlayerIndex=0;
       }
     });
 
@@ -94,13 +99,14 @@ export class Match implements OnInit{
       this.start.set(false);
       this.currentRound.set(0);
       this.matchGrid=[];
-      this.waitingPlayer();
+      this.dialog.open(DisconnectPopUp,{disableClose: true, data:{name:this.players[this.thisPlayerIndex===0 ? 1:0].name}});
     });
   }
   
   getPlayer(index:number){
     
     const dialogRef = this.dialog.open(PlayerCreation, {
+      disableClose: true,
       data: {id:index},
     });
 
@@ -134,7 +140,7 @@ export class Match implements OnInit{
   }
 
   getSize(){
-    const dialogRef = this.dialog.open(SizePopUp);
+    const dialogRef = this.dialog.open(SizePopUp,{disableClose: true});
 
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed'+result.size);
@@ -150,7 +156,7 @@ export class Match implements OnInit{
     const dialogRef = this.dialog.open(WaitingPopUp,{disableClose: true});
     dialogRef.afterClosed().subscribe(() => {
       this.nConnectedPlayers.set(2);
-      this.socketService.sendPlayerInfo(this.players[0],this.size);
+      this.socketService.sendPlayerInfo(this.players[this.thisPlayerIndex],this.size);
     });
   }
 
@@ -179,8 +185,9 @@ export class Match implements OnInit{
         this.duration.update(value=>value-1);
         if(this.duration()==0){
           this.players[this.currentPlayerIndex()].losses++;
-          this.players[(this.currentRound()+1%2)==0 ? 0:1].wins++;
-          this.showTrophy((this.currentRound()+1%2)==0 ? 0:1);
+          this.players[this.currentPlayerIndex()===0 ? 1:0].wins++;
+          this.showTrophy(this.currentPlayerIndex()===0 ? 1:0);
+          this.start.set(false);
         }
       }
     });
@@ -210,13 +217,15 @@ export class Match implements OnInit{
     if(this.checkWin(this.players[this.currentPlayerIndex()].value*this.size)){
       this.pauseTimer();
       this.showTrophy(this.currentPlayerIndex());
+      console.log("Vince "+this.currentPlayerIndex());
+      console.log((this.currentPlayerIndex()===0) ? 1:0)
       this.players[this.currentPlayerIndex()].wins++;
-      this.players[!(this.currentRound()%2===0) ? 0:1].losses++;
+      this.players[!(this.currentRound()%2===0) ? 1:0].losses++;
       this.start.set(false);
     }else if(this.currentRound()==this.size**2){
       this.pauseTimer();
       this.players[this.currentPlayerIndex()].draws++;
-      this.players[!(this.currentRound()%2===0) ? 0:1].draws++;
+      this.players[!(this.currentRound()%2===0) ? 1:0].draws++;
       this.start.set(false);
     }else{
       this.currentRound.update(value=>  value+1);

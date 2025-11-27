@@ -38,7 +38,6 @@ export class PlayerCreation implements OnInit{
       this.value.set(-1)
     }
     console.log(this.symbol())
-    
   }
 
   OnClick(){

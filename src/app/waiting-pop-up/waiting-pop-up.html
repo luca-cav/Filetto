@@ -1,12 +1,7 @@
-<mat-card class="example-card" appearance="outlined">
-    <mat-card-title style="margin: auto;">Non puoi giocare da solo!</mat-card-title>
-    <mat-card-content>
-        <p style="font-size: medium;">
-            In attesa del secondo giocatore...
-        </p>
-        <p style="font-size: medium;">
-            Invita un amico a unirsi alla stanza con il seguente link:<br>
-            <a href="{{linkRoom}}">{{linkRoom}}</a>
-        </p>
-    </mat-card-content>
-</mat-card>
+<h2 mat-dialog-title style="text-align: center;">Non puoi giocare da solo!</h2>
+<mat-dialog-content style=" justify-items: center; display: grid;">
+    <p style="font-size: medium;">
+        Invita un amico a unirsi alla stanza con il seguente link:<br>
+        <a href="{{linkRoom}}">{{linkRoom}}</a>
+    </p>
+</mat-dialog-content>

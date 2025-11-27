@@ -1,12 +1,22 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatRadioModule } from '@angular/material/radio';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogActions, MatDialogContent } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogActions, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 import { MatError } from "@angular/material/form-field";
+import{ MatInputModule } from '@angular/material/input';
+
 @Component({
   selector: 'app-size-pop-up',
-  imports: [FormsModule, MatRadioModule, MatError, MatDialogActions, MatDialogContent, MatButtonModule],
+  imports: [FormsModule, 
+    ReactiveFormsModule, 
+    MatRadioModule, 
+    MatError, 
+    MatDialogActions, 
+    MatDialogContent, 
+    MatButtonModule, 
+    MatInputModule, 
+    MatDialogTitle],
   templateUrl: './size-pop-up.html',
   styleUrl: './size-pop-up.css',
 })
@@ -17,7 +27,7 @@ export class SizePopUp {
   customSize=signal<number>(3);
   disabled=computed(()=>{
     if (this.size() === 6) {
-      return this.customSize() <= 0 || this.customSize() > 10;
+      return this.customSize() <= 3 || this.customSize() >= 10;
     }
     return false;
   });
