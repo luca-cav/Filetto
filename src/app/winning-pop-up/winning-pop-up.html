@@ -1,10 +1,8 @@
-<mat-card class="example-card" appearance="outlined">
-    <mat-card-title style="margin: auto;">Hai vinto!</mat-card-title>
-    <img mat-card-image [src]="trophy" style="width: 22rem;">
-    <mat-card-content>
-        <p style="font-size: medium;">
-            Congratulazioni {{player().name}}
-            Ora hai {{player().wins}} vittorie!
-        </p>
-    </mat-card-content>
-</mat-card>
+<h2 mat-dialog-title style="text-align: center;">Hai vinto!</h2>
+<mat-dialog-content style=" justify-items: center; display: grid;">
+    <img [src]="trophy" style="width: 22rem;">
+    <p style="font-size: large;">
+        Congratulazioni {{player().name}}.
+        Ora hai {{player().wins}} vittorie!
+    </p>
+</mat-dialog-content>

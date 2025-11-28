@@ -12,8 +12,9 @@ import { SocketService } from '../shared/services/socket.service';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { WaitingPopUp } from '../waiting-pop-up/waiting-pop-up';
-import {MatButtonModule} from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
 import { DisconnectPopUp } from '../disconnect-pop-up/disconnect-pop-up';
+import { LosingPopUp } from '../losing-pop-up/losing-pop-up';
 
 interface Symbol{
   symbol:string;
@@ -186,7 +187,12 @@ export class Match implements OnInit{
         if(this.duration()==0){
           this.players[this.currentPlayerIndex()].losses++;
           this.players[this.currentPlayerIndex()===0 ? 1:0].wins++;
-          this.showTrophy(this.currentPlayerIndex()===0 ? 1:0);
+          if(this.currentPlayerIndex()!==this.thisPlayerIndex){
+            console.log(this.players[this.currentPlayerIndex()],this.thisPlayerIndex)
+            this.showWin(this.thisPlayerIndex);
+          }else{
+            this.showLoss(this.thisPlayerIndex);
+          }
           this.start.set(false);
         }
       }
@@ -216,7 +222,11 @@ export class Match implements OnInit{
   updateScore(){
     if(this.checkWin(this.players[this.currentPlayerIndex()].value*this.size)){
       this.pauseTimer();
-      this.showTrophy(this.currentPlayerIndex());
+      if(this.currentPlayerIndex()===this.thisPlayerIndex){
+        this.showWin(this.currentPlayerIndex());
+      }else{
+        this.showLoss(this.thisPlayerIndex);
+      }
       console.log("Vince "+this.currentPlayerIndex());
       console.log((this.currentPlayerIndex()===0) ? 1:0)
       this.players[this.currentPlayerIndex()].wins++;
@@ -232,14 +242,21 @@ export class Match implements OnInit{
     }
   }
 
-  showTrophy(index:number){
-    console.log(index)
+  showWin(index:number){
     const dialogRef = this.dialog.open(WinningPopUp, {
       data: {player:this.players[index]},
     });
 
     dialogRef.afterClosed().subscribe(() => {});
   }
+
+  showLoss(index:number){
+    const dialogRef = this.dialog.open(LosingPopUp, {
+      data: {player:this.players[index]},
+    });
+    dialogRef.afterClosed().subscribe(() => {});
+  }
+
 
   checkWin(winningSum:number){
     console.log(winningSum)

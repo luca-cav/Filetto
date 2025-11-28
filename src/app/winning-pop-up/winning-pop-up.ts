@@ -1,14 +1,14 @@
 import { Component, inject, model } from '@angular/core';
-import { MatCardModule } from "@angular/material/card";
 import { Player } from '../shared/models/player';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
+
 interface WinDialogData{
   player:Player
 }
 
 @Component({
   selector: 'app-winning-pop-up',
-  imports: [MatCardModule],
+  imports: [ MatDialogContent, MatDialogTitle],
   templateUrl: './winning-pop-up.html',
   styleUrl: './winning-pop-up.css',
 })
