@@ -36,10 +36,8 @@ export class SizePopUp {
     console.log(this.customSize(),"  ",this.size())
     if (Number(this.size()) === 6) {
       if (this.customSize() > 0 && this.customSize() <= 10) {
-        this.dialogRef.close({ size: this.customSize() });
-        return;
+        this.dialogRef.close({ size: this.customSize() }); 
       }
-      return;
     }else{
       this.dialogRef.close({ size: this.size() });
     }

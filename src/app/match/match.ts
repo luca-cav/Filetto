@@ -1,11 +1,11 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { MatCard } from '@angular/material/card';
 import { MatIconModule } from "@angular/material/icon";
-import { Player, Player_DEFAULT } from '../shared/models/player';
+import { Player, Player_DEFAULT, Player_DEFAULT2 } from '../shared/models/player';
 import { MatDialog } from '@angular/material/dialog';
 import { PlayerCreation } from '../player-creation/player-creation';
 import { WinningPopUp } from '../winning-pop-up/winning-pop-up';
-import { Subscription, timer } from 'rxjs';
+import { map, of, Subscription, switchMap, tap, timer } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { SizePopUp } from '../size-pop-up/size-pop-up';
 import { SocketService } from '../shared/services/socket.service';
@@ -45,26 +45,14 @@ export class Match implements OnInit{
   nConnectedPlayers=signal<number>(1);
   currentPlayerIndex =computed(()=>(this.currentRound()%2===0) ? 1:0);
   matchGrid :Symbol[][]=[];
-  players :Player[]=[Player_DEFAULT,Player_DEFAULT];
+  players :Player[]=[Player_DEFAULT,Player_DEFAULT2];
   thisPlayerIndex :number=2;
   size :number =3;
   timer: Subscription = new Subscription;
   currentRoomId: string= '';
   
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const roomId = params.get('roomId');
-      if (roomId) {
-        this.socketService.enterRoom(roomId);
-        this.getPlayer(1);
-        this.thisPlayerIndex=1;
-      }else{
-        this.waitingPlayer();
-        this.getSize();
-        this.getPlayer(0);
-        this.thisPlayerIndex=0;
-      }
-    });
+    this.setUpPage();
 
     this.socketService.getRoomId().subscribe((roomId: string) => {
       console.log("Room: ", roomId);
@@ -104,61 +92,59 @@ export class Match implements OnInit{
     });
   }
   
-  getPlayer(index:number){
-    
+  setUpPage(){
+    this.route.paramMap.subscribe(params => {
+      const roomId = params.get('roomId');
+      if (roomId) {
+        this.socketService.enterRoom(roomId);
+        this.thisPlayerIndex=1;
+        this.getInfo();
+      }else{
+        this.thisPlayerIndex=0;
+        this.getInfo();
+      }
+    });
+  }
+
+  getInfo(){
     const dialogRef = this.dialog.open(PlayerCreation, {
       disableClose: true,
-      data: {id:index},
+      data: {player:this.players[this.thisPlayerIndex],id:this.thisPlayerIndex},
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-      if (result.name) {
-        this.players[result.id]={
-          name: result.name,
-          symbol: result.symbol,
-          value: result.value,
-          wins: 0,
-          draws: 0,
-          losses: 0
-        };
+    if(this.thisPlayerIndex===1){
+      dialogRef.afterClosed().subscribe(result => {
+        console.log('The dialog was closed');
+        this.players[result.id]=result.player
         this.socketService.sendPlayerInfo(this.players[result.id]);
         console.log(this.players)
-      }
-      else{
-        this.players[result.id]={
-          name: "Giocatore "+(index+1),
-          symbol: result.symbol,
-          value: result.value,
-          wins: 0,
-          draws: 0,
-          losses: 0
-        };
-        this.socketService.sendPlayerInfo(this.players[result.id]);
-        console.log(this.players)
-      }
-    });
-  }
-
-  getSize(){
-    const dialogRef = this.dialog.open(SizePopUp,{disableClose: true});
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed'+result.size);
-      if (result.size) {
-        this.size=result.size;
-        console.log(this.size);
-      }
-    });
-
-  }
-
-  waitingPlayer(){
-    const dialogRef = this.dialog.open(WaitingPopUp,{disableClose: true});
-    dialogRef.afterClosed().subscribe(() => {
-      this.nConnectedPlayers.set(2);
-      this.socketService.sendPlayerInfo(this.players[this.thisPlayerIndex],this.size);
-    });
+      });
+    }else{
+      dialogRef.afterClosed().pipe(
+        tap(result => {
+          console.log('The dialog was closed',result.id);
+          this.players[result.id]=result.player;
+          console.log(this.players)
+        }),
+        switchMap(()=>{
+          return this.dialog.open(SizePopUp,{disableClose: true}).afterClosed().pipe(
+            tap(result => {
+              console.log('The dialog was closed'+result.size);
+              this.size=result.size;
+              console.log(this.size);
+            }),
+            switchMap(()=>{
+              return this.dialog.open(WaitingPopUp,{disableClose: true}).afterClosed().pipe(
+                tap(() => {
+                  this.nConnectedPlayers.set(2);
+                  this.socketService.sendPlayerInfo(this.players[this.thisPlayerIndex],this.size);
+                })
+              );
+            })
+          );
+        })
+      ).subscribe(()=> console.log("Setup completed"));
+    }
   }
 
   startMatch(){

@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { PlayerDialogData } from '../shared/models/player';
+import { Player, Player_DEFAULT, PlayerDialogData } from '../shared/models/player';
 
 @Component({
   selector: 'app-player-creation',
@@ -24,27 +24,27 @@ export class PlayerCreation implements OnInit{
   readonly dialogRef = inject(MatDialogRef<PlayerCreation>);
   readonly data = inject<PlayerDialogData>(MAT_DIALOG_DATA);
   readonly id = model(this.data.id);
-  name = model();
-  symbol = model();
-  value = model();
+  player=model<Player>(this.data.player);
+  name=model<string>("");
 
   ngOnInit(){
     console.log(this.id())
-    if(this.id()+1===1){
-      this.symbol.set("clear");
-      this.value.set(1);
+    if(this.id()===0){
+      this.player().value=1;
     }else{
-      this.symbol.set("radio_button_unchecked");
-      this.value.set(-1)
+      this.player().value=-1;
     }
-    console.log(this.symbol())
   }
 
   OnClick(){
-    this.dialogRef.close({name:this.name(), symbol:this.symbol(), value:this.value(), id:this.id()});
+    if(this.name()!==""){
+      this.player().name=this.name();
+    }
+    console.log(this.id());
+    this.dialogRef.close({player:this.player(), id:this.id()});
   }
 
   onNoClick(): void {
-    this.dialogRef.close({symbol:this.symbol(), value:this.value(), id:this.id()});
+    this.dialogRef.close({player:this.player(), id:this.id()});
   }
 }

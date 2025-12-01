@@ -9,8 +9,17 @@ export interface Player{
 }
 
 export const Player_DEFAULT :Player={
-    name: "",
-    symbol: "",
+    name: "Giocatore 1",
+    symbol: "clear",
+    value:0,
+    wins: 0,
+    draws: 0,
+    losses: 0
+}
+
+export const Player_DEFAULT2 :Player={
+    name: "Giocatore 2",
+    symbol: "radio_button_unchecked",
     value:0,
     wins: 0,
     draws: 0,
@@ -18,8 +27,6 @@ export const Player_DEFAULT :Player={
 }
 
 export interface PlayerDialogData{
-  name:string,
-  id:number,
-  symbol:string,
-  value:number
+  player:Player;
+  id:number;
 }

@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 
 import { importProvidersFrom } from '@angular/core';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
-const socketConfig: SocketIoConfig = { url: 'http://localhost:3000', options: {} };
+const socketConfig: SocketIoConfig = { url: '', options: {} };
 
 export const appConfig: ApplicationConfig = {
   providers: [

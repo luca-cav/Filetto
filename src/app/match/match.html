@@ -1,6 +1,9 @@
 <div class="game-info">
     <div class="player-card-1">
         <h3>{{players[0].name}}</h3>
+        <div style="display:flex;">
+            <p>Simbolo:  </p><mat-icon fontIcon="{{players[0].symbol}}"></mat-icon>
+        </div>
         <p>Vittorie: {{players[0].wins}}</p>
         <p>Pareggi: {{players[0].draws}}</p>
         <p>Sconfitte: {{players[0].losses}}</p>
@@ -22,11 +25,18 @@
 
     <div class="player-card-2">
         <h3>{{players[1].name}}</h3>
-        <p>Vittorie: {{players[1].wins}}</p>
-        <p>Pareggi: {{players[1].draws}}</p>
-        <p>Sconfitte: {{players[1].losses}}</p>
+        <div style="display:flex;">
+            <p>Simbolo:  </p><mat-icon fontIcon="{{players[1].symbol}}"></mat-icon>
+        </div>
+        <div style="display: flex;">
+            <p>Vittorie:<br>{{players[1].wins}}</p>
+            <p>Pareggi: <br>{{players[1].draws}}</p>
+            <p>Sconfitte: <br>{{players[1].losses}}</p>
+        </div>
+        
     </div>
 </div>
+
 <mat-card class="match-card">
     @for(row of matchGrid; track $index; let i = $index){
         <div style="width: fit-content; display: flex; align-content: center;align-items: center;">
@@ -40,5 +50,3 @@
         </div>
     }
 </mat-card>
-
-

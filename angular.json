@@ -54,6 +54,12 @@
           "defaultConfiguration": "production"
         },
         "serve": {
+          "options":{
+            "allowedHosts":[ 
+              "sbjct-signals-clients-stating.trycloudflare.com/" 
+            ],
+            "proxyConfig": "proxy.conf.json"
+          },
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
